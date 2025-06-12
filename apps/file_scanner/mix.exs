@@ -31,11 +31,8 @@ defmodule FileScanner.MixProject do
       # {:sibling_app_in_umbrella, in_umbrella: true}
       {:etl_pipeline, in_umbrella: true},
       {:common, in_umbrella: true},
-      {:oban, "~> 2.17"},
-      {:ex_aws, "~> 2.4"},
-      {:ex_aws_s3, "~> 2.3"},
+      {:oban, "~> 2.19.4"},
       {:hackney, "~> 1.17"},
-      {:sweet_xml, "~> 0.7.3"},
       {:flow, "~> 1.2.4"}
     ]
   end

@@ -18,6 +18,7 @@ import Config
 #
 
 config :common, Common.S3, s3_bucket: System.get_env("S3_BUCKET", "tnt-automation")
+config :file_scanner, :s3, Common.S3
 
 config :etl_pipeline, EtlPipeline.Repo,
   database: "etl_dev",

@@ -11,18 +11,14 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
     samples =
       file_path
-      |> Etl.FileStreamer.stream()
+      |> Etl.FileStreamer.stream_s3_bucket()
       |> Etl.Sampler.sample(10)
 
     samples
-    # continue Flow for parallel stages
     |> Flow.from_enumerable()
-    |> Flow.map(&Etl.Enricher.enrich/1)
+    |> Flow.map(&Etl.Enricher.enrich(&1, file_path))
     |> Flow.map(&Etl.Validator.validate/1)
-    |> Enum.map(&wrap_test_case(file_path, &1))
-    |> Enum.each(&ETLPipeline.Repo.insert!/1)
-  end
-
-  defp wrap_test_case(file_path, test_case) do
+    |> Flow.filter(& &1)
+    |> Enum.each(&EtlPipeline.Repo.insert!/1)
   end
 end

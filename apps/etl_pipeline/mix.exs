@@ -31,13 +31,14 @@ defmodule EtlPipeline.MixProject do
       # {:sibling_app_in_umbrella, in_umbrella: true}
       {:ecto_sql, "~> 3.11"},
       {:postgrex, ">= 0.0.0"},
-      {:oban, "~> 2.17"},
+      {:oban, "~> 2.19.4"},
       {:jason, "~> 1.4"},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.3"},
       {:sweet_xml, "~> 0.7.5"},
       {:flow, "~> 1.2.4"},
       {:csv, "~> 2.4"},
+      {:httpoison, "~> 1.8"},
       {:common, in_umbrella: true}
     ]
   end

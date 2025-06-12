@@ -1,25 +1,19 @@
 defmodule FileScanner.Scanner do
-  alias Oban.Job
-  alias Common.S3
   require Logger
 
+  @s3 Application.compile_env(:file_scanner, :s3)
+
   def run(prefix \\ "") do
-    bucket = S3.bucket()
+    bucket = @s3.bucket()
 
     Logger.info("Scanning bucket: #{bucket}")
 
-    ExAws.S3.list_objects_v2(bucket, prefix: prefix)
-    |> ExAws.stream!()
-    |> Stream.map(& &1.key)
+    @s3.list_keys(bucket, prefix: prefix)
     |> Flow.from_enumerable()
     |> Flow.map(fn key ->
       Logger.info("Enqueing file: #{key}")
 
-      %Job{
-        queue: :etl_files,
-        worker: EtlPipeline.Workers.EtlFileJob,
-        args: %{"file" => key}
-      }
+      EtlPipeline.Workers.EtlFileJob.new(%{"file" => key})
       |> Oban.insert!()
 
       Logger.info("File enqueued: #{key}")
