@@ -1,5 +1,6 @@
 defmodule EtlPipeline.Etl.Enricher do
   require Logger
+  alias EtlPipeline.Etl.FileStreamer
   alias Common.Model
 
   alias Common.Api.{
@@ -16,16 +17,15 @@ defmodule EtlPipeline.Etl.Enricher do
   }
 
   alias Common.RowInfo
-  alias EtlPipeline.Etl.FileStreamer
 
   @api_date_layout "%Y-%m-%d"
-  @api_url "http://localhost:8081/"
+  @api_url "http://localhost:8081"
 
   def enrich(sample, dest_file_path) do
     row = get_first_match_shipper(dest_file_path, sample.shipper, sample.origin)
 
     if row do
-      Logger.debug("🚀 [Enricher] Found row for shipper_id=#{sample.shipper_id} → Enriching.")
+      Logger.debug("🚀 [Enricher] Found row for shipper_id=#{sample.shipper} → Enriching.")
       build_api_context(row, sample)
     else
       Logger.warning(
@@ -51,9 +51,11 @@ defmodule EtlPipeline.Etl.Enricher do
   end
 
   defp get_first_match_shipper(dest_file_path, shipper, origin) do
+    file_streamer = Application.get_env(:etl_pipeline, :file_streamer, FileStreamer)
+
     dest_file_path
-    |> FileStreamer.stream_file(origin)
-    |> Enum.find(fn row -> row["shipper_id"] == shipper end)
+    |> file_streamer.stream_file(origin)
+    |> Enum.find(fn row -> row.shipper_id == shipper end)
   end
 
   defp build_api_request(%RowInfo{} = row) do

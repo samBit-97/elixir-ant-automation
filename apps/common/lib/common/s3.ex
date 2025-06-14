@@ -8,15 +8,18 @@ defmodule Common.S3 do
 
   @behaviour Common.S3.S3Behaviour
 
-  @spec bucket() :: String.t()
-  def bucket do
-    Application.fetch_env!(:common, __MODULE__)[:s3_bucket]
-  end
-
   @spec list_keys(String.t(), keyword()) :: Enumerable.t()
+  @impl true
   def list_keys(bucket, opts \\ []) do
     ExAws.S3.list_objects_v2(bucket, opts)
     |> ExAws.stream!()
     |> Stream.map(& &1.key)
+  end
+
+  @spec get_object(String.t(), String.t()) :: Enumerable.t()
+  @impl true
+  def get_object(bucket, key) do
+    ExAws.S3.get_object(bucket, key)
+    |> ExAws.stream!()
   end
 end

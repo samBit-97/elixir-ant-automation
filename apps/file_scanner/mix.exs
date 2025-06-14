@@ -33,7 +33,8 @@ defmodule FileScanner.MixProject do
       {:common, in_umbrella: true},
       {:oban, "~> 2.19.4"},
       {:hackney, "~> 1.17"},
-      {:flow, "~> 1.2.4"}
+      {:flow, "~> 1.2.4"},
+      {:mox, "~> 1.1", only: :test}
     ]
   end
 end

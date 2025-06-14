@@ -1,14 +1,14 @@
 defmodule FileScanner.Scanner do
   require Logger
 
-  @s3 Application.compile_env(:file_scanner, :s3)
-
   def run(prefix \\ "") do
-    bucket = @s3.bucket()
+    bucket = Application.fetch_env!(:common, :s3_bucket)
 
     Logger.info("Scanning bucket: #{bucket}")
 
-    @s3.list_keys(bucket, prefix: prefix)
+    s3 = Application.get_env(:common, :s3, Common.S3)
+
+    s3.list_keys(bucket, prefix: prefix)
     |> Flow.from_enumerable()
     |> Flow.map(fn key ->
       Logger.info("Enqueing file: #{key}")

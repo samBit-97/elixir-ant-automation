@@ -1,14 +1,16 @@
 defmodule EtlPipeline.Etl.FileStreamer do
+  @behaviour EtlPipeline.Etl.FileStreamerBehaviour
   require Logger
-  alias Common.{Util, RowInfo, Model, S3}
+  alias Common.{Util, RowInfo, Model}
 
   def stream_s3_bucket(s3_key) do
-    bucket = S3.bucket()
+    bucket = Application.fetch_env!(:common, :s3_bucket)
 
     Logger.info("📂 [FileStreamer] Streaming S3 file: #{bucket}/#{s3_key}")
 
-    ExAws.S3.get_object(bucket, s3_key)
-    |> ExAws.stream!()
+    s3 = Application.get_env(:common, :s3, Common.S3)
+
+    s3.get_object(bucket, s3_key)
     |> Flow.from_enumerable()
     |> Flow.flat_map(&split_lines/1)
     |> Flow.map(&parse_line(&1, s3_key))
@@ -20,17 +22,23 @@ defmodule EtlPipeline.Etl.FileStreamer do
     |> String.split(["\n", "\r\n"], trim: true)
   end
 
-  defp parse_line(line, shipper) do
+  defp parse_line(line, s3_key) do
+    shipper = String.replace(s3_key, ".txt", "")
     columns = String.split(line, "|")
 
     %Model{
       origin: columns |> Enum.at(0, "") |> String.trim(),
       destination: columns |> Enum.at(1, "") |> String.trim(),
-      expected_transit_day: columns |> Enum.at(3, "") |> String.trim(),
+      expected_transit_day:
+        columns
+        |> Enum.at(3, "")
+        |> String.trim()
+        |> String.to_integer(),
       shipper: shipper
     }
   end
 
+  @impl true
   def stream_file(file_path, origin) do
     File.stream!(file_path)
     |> CSV.decode!(headers: true)
