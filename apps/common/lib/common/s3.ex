@@ -19,7 +19,7 @@ defmodule Common.S3 do
   @spec get_object(String.t(), String.t()) :: Enumerable.t()
   @impl true
   def get_object(bucket, key) do
-    ExAws.S3.get_object(bucket, key)
+    ExAws.S3.download_file(bucket, key, :memory)
     |> ExAws.stream!()
   end
 end
