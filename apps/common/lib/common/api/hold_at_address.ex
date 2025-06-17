@@ -1,4 +1,5 @@
 defmodule Common.Api.HoldAtAddress do
+  @derive Jason.Encoder
   defstruct [
     :address1,
     :address2,

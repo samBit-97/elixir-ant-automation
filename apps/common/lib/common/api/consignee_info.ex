@@ -1,4 +1,5 @@
 defmodule Common.Api.ConsigneeInfo do
+  @derive Jason.Encoder
   defstruct [
     :address1,
     :city,

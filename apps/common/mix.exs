@@ -30,7 +30,9 @@ defmodule Common.MixProject do
       # {:sibling_app_in_umbrella, in_umbrella: true}
       {:ex_aws, "~> 2.4"},
       {:ex_aws_s3, "~> 2.3"},
-      {:sweet_xml, "~> 0.7.3"}
+      {:hackney, "~> 1.9"},
+      {:httpoison, "~> 1.8"},
+      {:sweet_xml, "~> 0.7"}
     ]
   end
 end

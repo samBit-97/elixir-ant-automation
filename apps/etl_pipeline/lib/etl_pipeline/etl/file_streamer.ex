@@ -8,7 +8,7 @@ defmodule EtlPipeline.Etl.FileStreamer do
 
     Logger.info("📂 [FileStreamer] Streaming S3 file: #{bucket}/#{s3_key}")
 
-    s3 = Application.get_env(:common, :s3, Common.S3)
+    s3 = Application.fetch_env!(:common, :s3)
 
     s3.get_object(bucket, s3_key)
     |> Flow.from_enumerable()

@@ -21,11 +21,13 @@ defmodule EtlPipeline.Etl.Validator do
       }) do
     {:ok, json_body} = Jason.encode(request)
 
+    http_client = Application.get_env(:etl_pipeline, :http_client, Common.HttpoisonClient)
+
     Logger.info("🚀 [Validator] Posting to URL: #{url}")
 
     {time_taken_us, response} =
       :timer.tc(fn ->
-        HTTPoison.post(
+        http_client.post(
           url,
           json_body,
           headers,
@@ -35,7 +37,15 @@ defmodule EtlPipeline.Etl.Validator do
 
     time_taken_ms = div(time_taken_us, 1000)
 
-    actual_trasit_days = parse_transit_days(response)
+    actual_trasit_days =
+      case response do
+        {:ok, %HTTPoison.Response{} = response} ->
+          parse_transit_days(response)
+
+        {:error, reason} ->
+          Logger.warning("Http request failed: #{inspect(reason)}")
+          nil
+      end
 
     if actual_trasit_days do
       success = actual_trasit_days == expected_transit_day
@@ -81,7 +91,7 @@ defmodule EtlPipeline.Etl.Validator do
     end
   end
 
-  defp parse_response_payload(%HTTPoison.Response{body: body}) do
+  defp parse_response_payload({:ok, %HTTPoison.Response{body: body}}) do
     case Jason.decode(body) do
       {:ok, parsed} ->
         parsed

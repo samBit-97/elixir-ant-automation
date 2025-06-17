@@ -19,7 +19,7 @@ defmodule EtlPipeline.Etl.Enricher do
   alias Common.RowInfo
 
   @api_date_layout "%Y-%m-%d"
-  @api_url "http://localhost:8081"
+  @api_url "http://localhost:8083"
 
   def enrich(sample, dest_file_path) do
     row = get_first_match_shipper(dest_file_path, sample.shipper, sample.origin)

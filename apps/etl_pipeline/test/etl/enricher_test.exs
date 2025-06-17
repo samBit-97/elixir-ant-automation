@@ -45,6 +45,6 @@ defmodule Etl.EnricherTest do
 
     assert %ApiContext{} = ctx = Enricher.enrich(sample, "dummy/path.csv")
     assert ctx.expected_transit_day == 3
-    assert ctx.url == "http://localhost:8081/ORD/rate/qualifiedcarriers"
+    assert ctx.url == "http://localhost:8083/ORD/rate/qualifiedcarriers"
   end
 end

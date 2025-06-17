@@ -5,6 +5,8 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
   require Logger
 
+  @file_path Application.compile_env(:etl_pipeline, :file_path, "priv/tmp/dest.csv")
+
   @impl true
   def perform(%Job{args: %{"file" => file_path}}) do
     Logger.info("🚀 [ETLFileJob] Starting ETL for file: #{file_path}")
@@ -16,7 +18,7 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
     samples
     |> Flow.from_enumerable()
-    |> Flow.map(&Etl.Enricher.enrich(&1, file_path))
+    |> Flow.map(&Etl.Enricher.enrich(&1, @file_path))
     |> Flow.map(&Etl.Validator.validate/1)
     |> Flow.filter(& &1)
     |> Enum.each(&EtlPipeline.Repo.insert!/1)

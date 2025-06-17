@@ -16,7 +16,7 @@ defmodule Etl.FileStreamerTest do
 
   @csv_data """
   locn_nbr,shipper_id,barcode,weight,hazmat,length,width,height,address1,city,country,postal_code,state_province,delivery_method,locnType
-  LOC001,SH123,BC001,2.5,false,10.0,5.0,3.0,123 Main St,CityA,US,12345,CA,GND,Warehouse
+  LOC001,SH123,BC001,2.5,false,10,5,3,123 Main St,CityA,US,12345,CA,GND,Warehouse
   """
 
   @s3_file_data """

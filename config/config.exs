@@ -18,6 +18,7 @@ import Config
 #
 
 config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-automation")
+config :common, :s3, Common.S3
 
 config :etl_pipeline, EtlPipeline.Repo,
   database: "etl_dev",
@@ -33,5 +34,6 @@ config :etl_pipeline, Oban,
   ]
 
 config :etl_pipeline, ecto_repos: [EtlPipeline.Repo]
+config :etl_pipeline, :http_client, Common.HttpoisonClient
 
 import_config "#{config_env()}.exs"

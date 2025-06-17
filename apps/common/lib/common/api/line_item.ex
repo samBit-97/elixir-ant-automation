@@ -1,4 +1,5 @@
 defmodule Common.Api.LineItem do
+  @derive Jason.Encoder
   defstruct [
     :item_id,
     :country_of_origin,

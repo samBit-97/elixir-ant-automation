@@ -1,4 +1,5 @@
 defmodule Common.Api.PackageInfo do
+  @derive Jason.Encoder
   defstruct [
     :first_name,
     :last_name,
