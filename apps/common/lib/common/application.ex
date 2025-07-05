@@ -1,4 +1,4 @@
-defmodule EtlPipeline.Application do
+defmodule Common.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,14 +8,14 @@ defmodule EtlPipeline.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: EtlPipeline.Worker.start_link(arg)
-      # {EtlPipeline.Worker, arg}
-      {Oban, Application.fetch_env!(:etl_pipeline, Oban)}
+      # Starts a worker by calling: Common.Worker.start_link(arg)
+      # {Common.Worker, arg}
+      Common.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: EtlPipeline.Supervisor]
+    opts = [strategy: :one_for_one, name: Common.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

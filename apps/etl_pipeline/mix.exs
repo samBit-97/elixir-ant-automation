@@ -37,7 +37,8 @@ defmodule EtlPipeline.MixProject do
       {:csv, "~> 2.4"},
       {:httpoison, "~> 1.8"},
       {:common, in_umbrella: true},
-      {:mox, "~> 1.0", only: :test}
+      {:mox, "~> 1.0", only: :test},
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 end

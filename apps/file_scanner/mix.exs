@@ -18,7 +18,7 @@ defmodule FileScanner.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :runtime_tools],
       mod: {FileScanner.Application, []}
     ]
   end
@@ -29,7 +29,6 @@ defmodule FileScanner.MixProject do
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       # {:sibling_app_in_umbrella, in_umbrella: true}
-      {:etl_pipeline, in_umbrella: true},
       {:common, in_umbrella: true},
       {:oban, "~> 2.19.4"},
       {:flow, "~> 1.2.4"},

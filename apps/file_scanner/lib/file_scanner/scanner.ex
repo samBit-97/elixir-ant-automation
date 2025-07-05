@@ -13,12 +13,14 @@ defmodule FileScanner.Scanner do
     |> Flow.map(fn key ->
       Logger.info("Enqueing file: #{key}")
 
-      EtlPipeline.Workers.EtlFileJob.new(%{"file" => key})
+      %{"file" => key}
+      |> Oban.Job.new(queue: :etl_files, worker: "EtlPipeline.Workers.EtlFileJob")
       |> Oban.insert!()
 
       Logger.info("File enqueued: #{key}")
 
       :ok
     end)
+    |> Flow.run()
   end
 end

@@ -6,7 +6,13 @@ defmodule Mix.Tasks.FileScanner.Run do
 
   def run(args) do
     # start apps
-    Mix.Task.run("app.start")
+    Application.load(:common)
+    Application.ensure_all_started(:common)
+    Application.load(:file_scanner)
+    Application.ensure_all_started(:file_scanner)
+    
+    # Wait for supervision tree to start
+    Process.sleep(2000)
 
     prefix =
       case args do
@@ -16,6 +22,8 @@ defmodule Mix.Tasks.FileScanner.Run do
 
     Logger.info("Running ETLScanner.Scanner.run/1 with prefix: #{prefix}")
 
-    FileScanner.Scanner.run(prefix)
+    result = FileScanner.Scanner.run(prefix)
+    Logger.info("Scanner completed with result: #{inspect(result)}")
+    Logger.info("File scanning complete. Files have been enqueued for processing.")
   end
 end

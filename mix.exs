@@ -6,7 +6,24 @@ defmodule TntPipeline.MixProject do
       apps_path: "apps",
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      releases: [
+        etl_pipeline: [
+          include_executables_for: [:unix],
+          applications: [
+            etl_pipeline: :permanent,
+            common: :permanent,
+            runtime_tools: :permanent
+          ]
+        ],
+        file_scanner: [
+          include_executables_for: [:unix],
+          applications: [
+            file_scanner: :permanent,
+            runtime_tools: :permanent
+          ]
+        ]
+      ]
     ]
   end
 

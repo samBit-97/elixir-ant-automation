@@ -11,6 +11,7 @@ defmodule Etl.FileStreamerTest do
 
   setup do
     Application.put_env(:common, :s3, S3Mock)
+    Application.put_env(:common, :s3_bucket, "tnt-automation-test")
     :ok
   end
 

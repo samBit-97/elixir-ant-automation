@@ -18,7 +18,8 @@ defmodule Common.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Common.Application, []}
     ]
   end
 
@@ -30,9 +31,15 @@ defmodule Common.MixProject do
       # {:sibling_app_in_umbrella, in_umbrella: true}
       {:ex_aws, "~> 2.4"},
       {:ex_aws_s3, "~> 2.3"},
+      {:ex_aws_secretsmanager, "~> 2.0"},
       {:hackney, "~> 1.9"},
       {:httpoison, "~> 1.8"},
-      {:sweet_xml, "~> 0.7"}
+      {:sweet_xml, "~> 0.7"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"},
+      {:oban, "~> 2.19.4"},
+      {:mox, "~> 1.0", only: :test},
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 end
