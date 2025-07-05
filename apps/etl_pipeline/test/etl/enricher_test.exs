@@ -40,11 +40,67 @@ defmodule Etl.EnricherTest do
       expected_transit_day: 3
     }
 
-    FileStreamerMock
-    |> expect(:stream_file, fn "dummy/path.csv", "ORD" -> Flow.from_enumerable([@row]) end)
+    # Create a temporary test file
+    test_file = "/tmp/test_enricher.csv"
+    File.write!(test_file, "test,content")
 
-    assert %ApiContext{} = ctx = Enricher.enrich(sample, "dummy/path.csv")
+    FileStreamerMock
+    |> expect(:stream_file, fn ^test_file, "ORD" -> Flow.from_enumerable([@row]) end)
+
+    assert %ApiContext{} = ctx = Enricher.enrich(sample, test_file)
     assert ctx.expected_transit_day == 3
     assert ctx.url == "http://localhost:8083/ORD/rate/qualifiedcarriers"
+
+    # Clean up
+    File.rm(test_file)
+  end
+
+  test "enrich/2 returns nil for invalid input" do
+    sample = %Model{
+      # Invalid shipper
+      shipper: nil,
+      origin: "ORD",
+      destination: "NYC",
+      expected_transit_day: 3
+    }
+
+    test_file = "/tmp/test_enricher.csv"
+    File.write!(test_file, "test,content")
+
+    assert is_nil(Enricher.enrich(sample, test_file))
+
+    # Clean up
+    File.rm(test_file)
+  end
+
+  test "enrich/2 returns nil for non-existent file" do
+    sample = %Model{
+      shipper: "SHIP123",
+      origin: "ORD",
+      destination: "NYC",
+      expected_transit_day: 3
+    }
+
+    assert is_nil(Enricher.enrich(sample, "non/existent/file.csv"))
+  end
+
+  test "enrich/2 returns nil for missing configuration" do
+    sample = %Model{
+      shipper: "SHIP123",
+      origin: "ORD",
+      destination: "NYC",
+      expected_transit_day: 3
+    }
+
+    test_file = "/tmp/test_enricher.csv"
+    File.write!(test_file, "test,content")
+
+    # Remove required configuration
+    Application.delete_env(:etl_pipeline, :api_url)
+
+    assert is_nil(Enricher.enrich(sample, test_file))
+
+    # Clean up
+    File.rm(test_file)
   end
 end
