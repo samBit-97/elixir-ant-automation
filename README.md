@@ -19,6 +19,10 @@ TntPipeline is an Elixir umbrella project designed to handle ETL (Extract, Trans
 - 🐳 **Docker Support**: Containerized deployment with LocalStack for development
 - ⚙️ **Environment-based Configuration**: Flexible config management for dev/test/prod
 
+## Architecture Diagram
+![diagram-export-5-7-2025-11_51_57-PM](https://github.com/user-attachments/assets/762799bd-1d76-4940-a1ee-f4176b1f5c88)
+
+
 ## Setup Instructions
 
 ### Prerequisites
