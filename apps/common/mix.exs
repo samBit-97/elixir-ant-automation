@@ -35,6 +35,7 @@ defmodule Common.MixProject do
       {:hackney, "~> 1.9"},
       {:httpoison, "~> 1.8"},
       {:sweet_xml, "~> 0.7"},
+      {:jason, "~> 1.4"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:oban, "~> 2.19.4"},
