@@ -10,9 +10,6 @@ defmodule Mix.Tasks.FileScanner.Run do
     Application.ensure_all_started(:common)
     Application.load(:file_scanner)
     Application.ensure_all_started(:file_scanner)
-    
-    # Wait for supervision tree to start
-    Process.sleep(2000)
 
     prefix =
       case args do
