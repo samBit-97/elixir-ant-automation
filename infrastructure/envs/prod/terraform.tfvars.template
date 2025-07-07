@@ -1,0 +1,11 @@
+# Terraform variables for production environment
+# Copy this file to terraform.tfvars and fill in actual values
+# NEVER commit terraform.tfvars to version control
+
+# RDS Database Configuration
+rds_username = "your_db_username_here"
+rds_password = "your_secure_db_password_here"
+
+# Optional: Other sensitive variables
+# api_key = "your_api_key_here"
+# secret_token = "your_secret_token_here"
