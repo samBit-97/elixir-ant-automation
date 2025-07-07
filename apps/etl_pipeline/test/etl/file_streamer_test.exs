@@ -11,7 +11,7 @@ defmodule Etl.FileStreamerTest do
 
   setup do
     Application.put_env(:common, :s3, S3Mock)
-    Application.put_env(:common, :s3_bucket, "tnt-automation-test")
+    Application.put_env(:common, :s3_bucket, "tnt-pipeline-etl-files-test")
     :ok
   end
 
@@ -52,7 +52,7 @@ defmodule Etl.FileStreamerTest do
 
   test "stream_s3_bucket/1 stream file contents in S3 bucket" do
     S3Mock
-    |> expect(:get_object, fn "tnt-automation-test", "file1.txt" ->
+    |> expect(:get_object, fn "tnt-pipeline-etl-files-test", "file1.txt" ->
       @s3_file_data
       |> String.split("\n", trim: true)
       |> Stream.map(& &1)

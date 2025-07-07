@@ -64,7 +64,7 @@ defmodule EtlPipeline.HealthCheck do
   defp check_s3 do
     try do
       s3_module = Application.get_env(:common, :s3, S3)
-      bucket = Application.get_env(:common, :s3_bucket, "tnt-automation")
+      bucket = Application.get_env(:common, :s3_bucket)
       
       case s3_module.list_objects(bucket, prefix: "health-check") do
         {:ok, _} -> :ok
