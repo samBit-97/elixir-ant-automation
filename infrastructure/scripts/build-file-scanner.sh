@@ -7,7 +7,7 @@ set -e
 
 # Default values
 REGION=${1:-us-east-1}
-ACCOUNT_ID=${2:-445567085614}
+ACCOUNT_ID=${2:-${AWS_ACCOUNT_ID}}
 TAG=${3:-latest}
 
 # ECR repository details

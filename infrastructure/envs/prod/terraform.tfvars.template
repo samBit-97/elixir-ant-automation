@@ -6,6 +6,8 @@
 rds_username = "your_db_username_here"
 rds_password = "your_secure_db_password_here"
 
-# Optional: Other sensitive variables
-# api_key = "your_api_key_here"
-# secret_token = "your_secret_token_here"
+# Instructions:
+# 1. Copy this file: cp terraform.tfvars.template terraform.tfvars
+# 2. Fill in your actual production values
+# 3. Ensure terraform.tfvars is in .gitignore (already configured)
+# 4. Use AWS Secrets Manager for enhanced security

@@ -236,13 +236,13 @@ terraform init && terraform apply
 ```bash
 # Build and push file scanner image
 docker build -f Dockerfile.file_scanner -t tnt-pipeline-file-scanner .
-docker tag tnt-pipeline-file-scanner:latest 445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-file-scanner:latest
-docker push 445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-file-scanner:latest
+docker tag tnt-pipeline-file-scanner:latest ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-file-scanner:latest
+docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-file-scanner:latest
 
 # Build and push ETL pipeline image
 docker build -f Dockerfile.etl_pipeline -t tnt-pipeline-etl .
-docker tag tnt-pipeline-etl:latest 445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest
-docker push 445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest
+docker tag tnt-pipeline-etl:latest ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest
+docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest
 ```
 
 ### Cost Optimization
