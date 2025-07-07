@@ -1,0 +1,66 @@
+# Multi-stage Dockerfile for file_scanner release
+# Stage 1: Build the release
+FROM hexpm/elixir:1.18.4-erlang-28.0.1-alpine-3.21.3 AS builder
+
+# Set build environment
+ENV MIX_ENV=prod \
+    LANG=C.UTF-8
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    build-base \
+    openssl-dev
+
+WORKDIR /app
+
+# Copy umbrella root files
+COPY mix.exs mix.lock ./
+
+# Copy umbrella config
+COPY config config
+
+# Copy only required apps for file_scanner
+COPY apps/common apps/common
+COPY apps/file_scanner apps/file_scanner
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Get and compile dependencies
+RUN mix deps.get --only prod && \
+    mix deps.compile
+
+# Compile the applications
+RUN mix compile
+
+# Create the release
+RUN mix release file_scanner
+
+# Stage 2: Create minimal runtime image
+FROM alpine:3.21.3
+
+# Install runtime dependencies including C++ runtime
+RUN apk add --no-cache \
+    openssl \
+    ncurses \
+    bash \
+    libstdc++ \
+    libgcc
+
+# Create app user
+RUN addgroup -g 1000 -S app && \
+    adduser -u 1000 -S app -G app
+
+WORKDIR /app
+
+# Copy the release from builder stage
+COPY --from=builder --chown=app:app /app/_build/prod/rel/file_scanner ./
+
+# Switch to app user
+USER app
+
+# Run the file scanner and exit
+# Uses eval to properly start applications and run scanner
+CMD ["./bin/file_scanner", "eval", "Application.ensure_all_started(:file_scanner); FileScanner.Scanner.run()"]

@@ -20,3 +20,55 @@ erl_crash.dump
 /tmp/
 
 /data/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*
+
+# Release files
+rel/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+*.coverdata
+
+# Terraform sensitive files
+*.tfvars
+*.tfvars.json
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.*.backup
+.terraform/
+.terraform.lock.hcl
+*.tfplan
+
+# AWS and secrets
+aws-credentials.json
+secrets.json
+
+# Logs
+*.log
+logs/
+
+# Certificate files
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.bak
+*.backup
+
+# Local configuration overrides
+config/*.secret.exs
+
+*.claude/

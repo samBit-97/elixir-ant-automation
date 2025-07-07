@@ -20,6 +20,7 @@ defmodule TntPipeline.MixProject do
           include_executables_for: [:unix],
           applications: [
             file_scanner: :permanent,
+            common: :permanent,
             runtime_tools: :permanent
           ]
         ]

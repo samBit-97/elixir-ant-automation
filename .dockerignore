@@ -1,0 +1,41 @@
+# Ignore development files
+.git/
+.gitignore
+README.md
+Dockerfile
+.env*
+
+# Ignore build artifacts
+_build/
+deps/
+.elixir_ls/
+erl_crash.dump
+
+# Ignore test files
+**/test/
+**/*_test.exs
+**/cover/
+**/*.coverdata
+
+# Ignore documentation
+doc/
+docs/
+
+# Ignore temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# Ignore Claude sessions and temp files
+.claude/
+temp_obsidian_fix.md
+
+# Ignore infrastructure files (not needed in container)
+infrastructure/
+terraform.tfstate*
+*.tfvars
+
+# Ignore development configs
+config/dev.secret.exs
+priv/static/
