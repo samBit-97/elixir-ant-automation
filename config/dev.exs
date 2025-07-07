@@ -10,6 +10,9 @@ config :ex_aws, :s3,
   secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY", "test"),
   force_path_style: true
 
+# S3 bucket configuration for development
+config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-pipeline-etl-files-dev")
+
 config :common, Common.Repo,
   database: System.get_env("DB_NAME", "etl_dev"),
   username: System.get_env("DB_USERNAME", "postgres"),
@@ -17,4 +20,3 @@ config :common, Common.Repo,
   hostname: System.get_env("DB_HOSTNAME", "localhost"),
   port: String.to_integer(System.get_env("DB_PORT", "5432")),
   pool_size: String.to_integer(System.get_env("DB_POOL_SIZE", "20"))
-

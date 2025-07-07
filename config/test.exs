@@ -1,6 +1,6 @@
 import Config
 
-config :common, s3_bucket: "tnt-automation-test"
+config :common, s3_bucket: "tnt-pipeline-etl-files-test"
 config :common, :s3, Common.S3Mock
 
 config :common, Common.Repo,

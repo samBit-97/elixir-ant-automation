@@ -17,7 +17,7 @@ import Config
 #       metadata: [:user_id]
 #
 
-config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-automation")
+config :common, s3_bucket: System.get_env("S3_BUCKET")
 config :common, :s3, Common.S3
 
 config :etl_pipeline, Oban,
