@@ -5,6 +5,9 @@ defmodule Mix.Tasks.FileScanner.Run do
   @shortdoc "Runs the ETL scanner"
 
   def run(args) do
+    # Set APP_TYPE to file_scanner mode
+    System.put_env("APP_TYPE", "file_scanner")
+    
     # start apps
     Application.load(:common)
     Application.ensure_all_started(:common)

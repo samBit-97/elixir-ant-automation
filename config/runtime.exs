@@ -3,6 +3,32 @@ import Config
 # Runtime configuration - evaluated when the release starts, not when it's built
 # This allows ECS environment variables to be used properly
 
+# API Configuration for ETL Pipeline (applies to all environments)
+config :etl_pipeline,
+  api_url: System.get_env("API_URL", "http://localhost:8083"),
+  whm_client_id: System.get_env("WHM_CLIENT_ID", "whm_client_id"),
+  auth_token: System.get_env("AUTH_TOKEN", "auth_token"),
+  default_first_name: System.get_env("DEFAULT_FIRST_NAME", "Customer"),
+  default_last_name: System.get_env("DEFAULT_LAST_NAME", "Name"),
+  default_contact: System.get_env("DEFAULT_CONTACT", "Customer Service"),
+  default_phone: System.get_env("DEFAULT_PHONE", "000-000-0000"),
+  hold_at_address1: System.get_env("HOLD_AT_ADDRESS1", "123 Main St"),
+  hold_at_city: System.get_env("HOLD_AT_CITY", "Your City"),
+  hold_at_contact: System.get_env("HOLD_AT_CONTACT", "Contact Name"),
+  hold_at_company: System.get_env("HOLD_AT_COMPANY", "Your Company"),
+  hold_at_country: System.get_env("HOLD_AT_COUNTRY", "USA"),
+  hold_at_postal_code: System.get_env("HOLD_AT_POSTAL_CODE", "12345"),
+  hold_at_state: System.get_env("HOLD_AT_STATE", "ST"),
+  hold_at_email: System.get_env("HOLD_AT_EMAIL", "contact@company.com"),
+  hold_at_phone: System.get_env("HOLD_AT_PHONE", "555-123-4567"),
+  return_address1: System.get_env("RETURN_ADDRESS1", "456 Return St"),
+  return_city: System.get_env("RETURN_CITY", "Return City"),
+  return_country: System.get_env("RETURN_COUNTRY", "USA"),
+  return_postal_code: System.get_env("RETURN_POSTAL_CODE", "67890"),
+  return_state: System.get_env("RETURN_STATE", "RT"),
+  printer_name: System.get_env("PRINTER_NAME", "production_printer"),
+  printer_ip: System.get_env("PRINTER_IP", "192.168.1.100")
+
 if config_env() == :prod do
   # Production database configuration for Common.Repo (used by Oban and file_scanner)
   config :common, Common.Repo,
@@ -31,3 +57,7 @@ if config_env() == :prod do
     host: "s3.amazonaws.com"
 end
 
+# Configuration for all non-production environments
+# Set defaults if environment variables are not provided
+config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-pipeline-etl-files-dev")
+config :common, :dynamodb_table, System.get_env("DYNAMODB_TABLE", "tnt_pipeline_test_results_dev")

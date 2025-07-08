@@ -59,3 +59,4 @@ defmodule Common.UtilTest do
     end
   end
 end
+

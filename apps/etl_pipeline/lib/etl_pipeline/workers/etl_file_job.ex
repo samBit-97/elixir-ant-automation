@@ -21,6 +21,10 @@ defmodule EtlPipeline.Workers.EtlFileJob do
     |> Flow.map(&Etl.Enricher.enrich(&1, @file_path))
     |> Flow.map(&Etl.Validator.validate/1)
     |> Flow.filter(& &1)
-    |> Enum.each(&Common.Repo.insert!/1)
+    |> Enum.each(fn result ->
+      Logger.debug(
+        "📊 [ETLFileJob] Processed test case: #{result.shipper_id} #{result.origin}→#{result.destination}"
+      )
+    end)
   end
 end

@@ -2,6 +2,7 @@ import Config
 
 config :common, s3_bucket: "tnt-pipeline-etl-files-test"
 config :common, :s3, Common.S3Mock
+config :common, :dynamodb_table, "tnt-test-results-test"
 
 config :common, Common.Repo,
   database: "etl_test",
@@ -12,15 +13,10 @@ config :common, Common.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :etl_pipeline, Oban,
+config :common, Oban,
   repo: Common.Repo,
   testing: :manual,
-  name: EtlPipelineTestOban
-
-config :file_scanner, Oban,
-  repo: Common.Repo,
-  testing: :manual,
-  name: FileScannerTestOban
+  name: CommonTestOban
 
 config :etl_pipeline,
   api_url: "http://localhost:8083",

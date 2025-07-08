@@ -40,8 +40,9 @@ defmodule Etl.EnricherTest do
       expected_transit_day: 3
     }
 
-    # Create a temporary test file
-    test_file = "/tmp/test_enricher.csv"
+    # Use a test fixture file that always exists
+    test_file = Path.join([__DIR__, "..", "fixtures", "test_enricher.csv"])
+    File.mkdir_p!(Path.dirname(test_file))
     File.write!(test_file, "test,content")
 
     FileStreamerMock
@@ -50,9 +51,6 @@ defmodule Etl.EnricherTest do
     assert %ApiContext{} = ctx = Enricher.enrich(sample, test_file)
     assert ctx.expected_transit_day == 3
     assert ctx.url == "http://localhost:8083/ORD/rate/qualifiedcarriers"
-
-    # Clean up
-    File.rm(test_file)
   end
 
   test "enrich/2 returns nil for invalid input" do

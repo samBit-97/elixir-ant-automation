@@ -34,7 +34,7 @@ defmodule EtlPipeline.Etl.Enricher do
 
       nil ->
         Logger.warning(
-          "⚠️ [Enricher] No row found in #{dest_file_path} for shipper_id=#{sample.shipper_id}"
+          "⚠️ [Enricher] No row found in #{dest_file_path} for shipper_id=#{sample.shipper}"
         )
 
         nil

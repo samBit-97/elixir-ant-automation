@@ -15,7 +15,7 @@ defmodule FileScanner.Scanner do
 
       %{"file" => key}
       |> Oban.Job.new(queue: :etl_files, worker: "EtlPipeline.Workers.EtlFileJob")
-      |> Oban.insert!()
+      |> then(&Oban.insert!(Common.FileScannerOban, &1))
 
       Logger.info("File enqueued: #{key}")
 

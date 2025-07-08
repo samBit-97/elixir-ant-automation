@@ -5,18 +5,19 @@ defmodule Etl.ValidatorTest do
 
   alias EtlPipeline.Etl.Validator
   alias Common.Api.{ApiContext, ApiRequest, ShipmentInfo, ConsigneeInfo, PackageInfo}
-  alias EtlPipeline.TestCaseResult
 
   defmock(Common.HttpClientMock, for: Common.HttpClient)
+  defmock(Common.DynamoWriterMock, for: Common.DynamoWriter.Behaviour)
 
   setup :verify_on_exit!
 
   setup do
     Application.put_env(:etl_pipeline, :http_client, Common.HttpClientMock)
+    Application.put_env(:etl_pipeline, :dynamo_writer, Common.DynamoWriterMock)
     :ok
   end
 
-  test "validate/1 returns TestCaseResult on transitDay match" do
+  test "validate/1 returns result map on transitDay match" do
     request = %ApiRequest{
       package_info: %PackageInfo{shipper_id: "SHIP123", loc: "ORD"},
       shipment_info: %ShipmentInfo{
@@ -44,6 +45,11 @@ defmodule Etl.ValidatorTest do
       {:ok, %HTTPoison.Response{body: body}}
     end)
 
+    Common.DynamoWriterMock
+    |> expect(:write_test_result, fn _result ->
+      :ok
+    end)
+
     ctx = %ApiContext{
       api_request: request,
       headers: [],
@@ -53,7 +59,7 @@ defmodule Etl.ValidatorTest do
 
     result = Validator.validate(ctx)
 
-    assert %TestCaseResult{
+    assert %{
              origin: "ORD",
              destination: "NYC",
              shipper_id: "SHIP123",

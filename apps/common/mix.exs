@@ -32,6 +32,7 @@ defmodule Common.MixProject do
       {:ex_aws, "~> 2.4"},
       {:ex_aws_s3, "~> 2.3"},
       {:ex_aws_secretsmanager, "~> 2.0"},
+      {:ex_aws_dynamo, "~> 4.2"},
       {:hackney, "~> 1.9"},
       {:httpoison, "~> 1.8"},
       {:sweet_xml, "~> 0.7"},

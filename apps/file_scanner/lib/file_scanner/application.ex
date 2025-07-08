@@ -10,24 +10,12 @@ defmodule FileScanner.Application do
     children = [
       # Starts a worker by calling: FileScanner.Worker.start_link(arg)
       # {FileScanner.Worker, arg}
-      {Oban, Application.fetch_env!(:file_scanner, Oban)}
+      # Oban is now started in Common.Application
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: FileScanner.Supervisor]
-    
-    result = Supervisor.start_link(children, opts)
-    
-    # Auto-run scanner if environment variable is set
-    if System.get_env("AUTO_RUN_SCANNER") == "true" do
-      Task.start(fn -> 
-        # Add a small delay to ensure all applications are started
-        Process.sleep(1000)
-        FileScanner.Scanner.run()
-      end)
-    end
-    
-    result
+    Supervisor.start_link(children, opts)
   end
 end

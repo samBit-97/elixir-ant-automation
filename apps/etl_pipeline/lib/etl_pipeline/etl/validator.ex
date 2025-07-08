@@ -50,7 +50,7 @@ defmodule EtlPipeline.Etl.Validator do
     if actual_trasit_days do
       success = actual_trasit_days == expected_transit_day
 
-      %EtlPipeline.TestCaseResult{
+      result = %{
         shipper_id: shipper_id,
         origin: origin,
         destination: destination,
@@ -61,6 +61,19 @@ defmodule EtlPipeline.Etl.Validator do
         response_payload: parse_response_payload(response),
         time_taken_ms: time_taken_ms
       }
+
+      # Write to DynamoDB for real-time dashboard
+      dynamo_writer = Application.get_env(:etl_pipeline, :dynamo_writer, Common.DynamoWriter)
+
+      case dynamo_writer.write_test_result(result) do
+        :ok ->
+          Logger.info("✅ [Validator] Test result written to DynamoDB")
+
+        {:error, reason} ->
+          Logger.warning("⚠️ [Validator] Failed to write to DynamoDB: #{inspect(reason)}")
+      end
+
+      result
     else
       Logger.warning("Skipping test case")
       nil

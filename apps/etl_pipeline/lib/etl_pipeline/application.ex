@@ -10,7 +10,7 @@ defmodule EtlPipeline.Application do
     children = [
       # Starts a worker by calling: EtlPipeline.Worker.start_link(arg)
       # {EtlPipeline.Worker, arg}
-      {Oban, Application.fetch_env!(:etl_pipeline, Oban)}
+      # Oban will be started in Common.Application since it uses Common.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

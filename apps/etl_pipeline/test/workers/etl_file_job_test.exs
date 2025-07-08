@@ -4,7 +4,6 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
 
   alias EtlPipeline.Workers.EtlFileJob
   alias Oban.Job
-  alias EtlPipeline.{Repo, TestCaseResult}
   alias EtlPipeline.Etl.{FileStreamer, Sampler, Enricher, Validator}
   alias Common.{Model, RowInfo}
   alias Common.Api.{ApiContext, ApiRequest, ShipmentInfo, ConsigneeInfo, PackageInfo}
@@ -59,7 +58,7 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
     state_province: "IL"
   }
 
-  @test_case_result %TestCaseResult{
+  @test_case_result %{
     shipper_id: "SHIP123",
     origin: "ORD",
     destination: "NYC",
@@ -96,11 +95,8 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
           end do
           with_mock Validator, [:passthrough],
             validate: fn %ApiContext{} -> @test_case_result end do
-            with_mock Repo, [:passthrough],
-              insert!: fn %TestCaseResult{} -> @test_case_result end do
-              result = EtlFileJob.perform(job)
-              assert result == :ok
-            end
+            result = EtlFileJob.perform(job)
+            assert result == :ok
           end
         end
       end
@@ -189,15 +185,11 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
           end do
           with_mock Validator, [:passthrough],
             validate: fn %ApiContext{} -> @test_case_result end do
-            with_mock Repo, [:passthrough],
-              insert!: fn %TestCaseResult{} -> @test_case_result end do
-              result = EtlFileJob.perform(job)
-              assert result == :ok
-            end
+            result = EtlFileJob.perform(job)
+            assert result == :ok
           end
         end
       end
     end
   end
 end
-
