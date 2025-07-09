@@ -1,0 +1,66 @@
+# Multi-stage Dockerfile for ETL pipeline release
+# Stage 1: Build the release
+FROM hexpm/elixir:1.18.4-erlang-28.0.1-alpine-3.21.3 AS builder
+
+# Set build environment
+ENV MIX_ENV=prod \
+    LANG=C.UTF-8
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    build-base \
+    openssl-dev
+
+WORKDIR /app
+
+# Copy umbrella root files
+COPY mix.exs mix.lock ./
+
+# Copy umbrella config
+COPY config config
+
+# Copy required apps for ETL pipeline (common + etl_pipeline)
+COPY apps/common apps/common
+COPY apps/etl_pipeline apps/etl_pipeline
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Get and compile dependencies
+RUN mix deps.get --only prod && \
+    mix deps.compile
+
+# Compile the applications
+RUN mix compile
+
+# Create the release
+RUN mix release etl_pipeline
+
+# Stage 2: Create minimal runtime image
+FROM alpine:3.21.3
+
+# Install runtime dependencies including C++ runtime
+RUN apk add --no-cache \
+    openssl \
+    ncurses \
+    bash \
+    libstdc++ \
+    libgcc
+
+# Create app user
+RUN addgroup -g 1000 -S app && \
+    adduser -u 1000 -S app -G app
+
+WORKDIR /app
+
+# Copy the release from builder stage
+COPY --from=builder --chown=app:app /app/_build/prod/rel/etl_pipeline ./
+
+# Switch to app user
+USER app
+
+# Run the ETL pipeline as Oban worker
+# Uses release binary for continuous job processing
+CMD ["./bin/etl_pipeline", "start"]
