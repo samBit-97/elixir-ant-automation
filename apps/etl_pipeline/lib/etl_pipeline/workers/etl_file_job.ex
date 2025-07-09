@@ -5,7 +5,7 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
   require Logger
 
-  @file_path Application.compile_env(:etl_pipeline, :file_path, "priv/tmp/dest.csv")
+  @dest_s3_key Application.compile_env(:etl_pipeline, :dest_s3_key, "config/dest.csv")
 
   @impl true
   def perform(%Job{args: %{"file" => file_path}}) do
@@ -17,14 +17,10 @@ defmodule EtlPipeline.Workers.EtlFileJob do
       |> Etl.Sampler.sample(10)
 
     samples
-    |> Flow.from_enumerable()
-    |> Flow.map(&Etl.Enricher.enrich(&1, @file_path))
+    |> Flow.from_enumerable(max_demand: 10, stages: 4)
+    |> Flow.map(&Etl.Enricher.enrich(&1, @dest_s3_key))
     |> Flow.map(&Etl.Validator.validate/1)
     |> Flow.filter(& &1)
-    |> Enum.each(fn result ->
-      Logger.debug(
-        "📊 [ETLFileJob] Processed test case: #{result.shipper_id} #{result.origin}→#{result.destination}"
-      )
-    end)
+    |> Flow.run()
   end
 end
