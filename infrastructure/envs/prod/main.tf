@@ -60,6 +60,9 @@ module "ecs_cluster" {
   s3_bucket_name             = var.s3_bucket_name
   dynamodb_table_name        = var.dynamodb_table_name
   environment                = "prod"
+  api_url                    = var.api_url
+  whm_client_id              = var.whm_client_id
+  auth_token                 = var.auth_token
 }
 
 # DynamoDB table for production
@@ -107,4 +110,15 @@ resource "aws_security_group" "rds_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# Output the Go API URL for use in terraform.tfvars
+output "go_api_url" {
+  description = "URL of the Go API service via ALB"
+  value       = module.ecs_cluster.go_api_url
+}
+
+output "go_api_alb_dns_name" {
+  description = "DNS name of the Go API ALB"
+  value       = module.ecs_cluster.go_api_alb_dns_name
 }

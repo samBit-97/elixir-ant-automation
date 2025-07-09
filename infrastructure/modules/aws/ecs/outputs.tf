@@ -38,3 +38,18 @@ output "etl_service_arn" {
   description = "ARN of the ETL worker service"
   value       = aws_ecs_service.etl_worker.id
 }
+
+output "go_api_alb_dns_name" {
+  description = "DNS name of the Go API Application Load Balancer"
+  value       = aws_lb.go_api.dns_name
+}
+
+output "go_api_alb_zone_id" {
+  description = "Zone ID of the Go API Application Load Balancer"
+  value       = aws_lb.go_api.zone_id
+}
+
+output "go_api_url" {
+  description = "Full URL of the Go API service"
+  value       = "http://${aws_lb.go_api.dns_name}"
+}
