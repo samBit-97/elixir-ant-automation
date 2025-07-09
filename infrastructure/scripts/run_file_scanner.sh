@@ -9,7 +9,7 @@ ENVIRONMENT=${1:-prod}
 CLUSTER_NAME="etl-cluster-${ENVIRONMENT}"
 TASK_DEFINITION="${CLUSTER_NAME}-file-scanner"
 SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=*public*" --query 'Subnets[*].SubnetId' --output text | tr '\t' ',')
-SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=etl-security-group" --query 'SecurityGroups[0].GroupId' --output text)
+SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=etl-cluster-prod-fargate-sg" --query 'SecurityGroups[0].GroupId' --output text)
 
 echo "Starting file_scanner ECS task..."
 echo "Environment: ${ENVIRONMENT}"
