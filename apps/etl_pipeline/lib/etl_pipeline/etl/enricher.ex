@@ -19,7 +19,7 @@ defmodule EtlPipeline.Etl.Enricher do
 
   @api_date_layout "%Y-%m-%d"
 
-  def enrich(sample, _dest_s3_key) do
+  def enrich(sample) do
     with :ok <- validate_input_sample(sample),
          :ok <- validate_auth_config(),
          row when not is_nil(row) <-

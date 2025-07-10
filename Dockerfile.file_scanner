@@ -58,9 +58,18 @@ WORKDIR /app
 # Copy the release from builder stage
 COPY --from=builder --chown=app:app /app/_build/prod/rel/file_scanner ./
 
+# Set APP_TYPE environment variable for proper Oban configuration
+ENV APP_TYPE=file_scanner
+
+# Create startup script (as root before switching to app user)
+RUN echo '#!/bin/bash' > /app/run_scanner.sh && \
+    echo 'export APP_TYPE=file_scanner' >> /app/run_scanner.sh && \
+    echo './bin/file_scanner eval "System.put_env(\"APP_TYPE\", \"file_scanner\"); Application.load(:common); Application.ensure_all_started(:common); Application.load(:file_scanner); Application.ensure_all_started(:file_scanner); FileScanner.Scanner.run()"' >> /app/run_scanner.sh && \
+    chmod +x /app/run_scanner.sh && \
+    chown app:app /app/run_scanner.sh
+
 # Switch to app user
 USER app
 
 # Run the file scanner and exit
-# Uses eval to properly start applications and run scanner
-CMD ["./bin/file_scanner", "eval", "Application.ensure_all_started(:file_scanner); FileScanner.Scanner.run()"]
+CMD ["/app/run_scanner.sh"]

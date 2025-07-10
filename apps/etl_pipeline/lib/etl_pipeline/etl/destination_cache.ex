@@ -19,6 +19,9 @@ defmodule EtlPipeline.Etl.DestinationCache do
 
   @spec get_row(String.t()) :: RowInfo.t() | nil
   def get_row(shipper_id) do
+    # Wait for cache to be loaded before attempting lookup
+    wait_for_cache_loaded()
+
     case :ets.lookup(@cache_name, {shipper_id}) do
       [{_key, row}] -> row
       [] -> nil
@@ -30,6 +33,11 @@ defmodule EtlPipeline.Etl.DestinationCache do
     GenServer.call(@cache_name, :reload)
   end
 
+  @spec wait_for_cache_loaded() :: :ok
+  def wait_for_cache_loaded do
+    GenServer.call(@cache_name, :wait_for_loaded, :infinity)
+  end
+
   # Server callbacks
 
   @impl true
@@ -37,22 +45,42 @@ defmodule EtlPipeline.Etl.DestinationCache do
     # Create ETS table for fast lookups
     :ets.new(@cache_name, [:named_table, :set, :public, read_concurrency: true])
 
-    # Load data immediately
+    # Always load data in production - no environment check needed
     send(self(), :load_data)
-
-    {:ok, %{}}
+    {:ok, %{loaded: false, waiting_callers: []}}
   end
 
   @impl true
   def handle_call(:reload, _from, state) do
     send(self(), :load_data)
+    {:reply, :ok, %{state | loaded: false}}
+  end
+
+  @impl true
+  def handle_call(:wait_for_loaded, _from, %{loaded: true} = state) do
+    # Already loaded, reply immediately
     {:reply, :ok, state}
   end
 
   @impl true
-  def handle_info(:load_data, state) do
-    load_destination_data()
-    {:noreply, state}
+  def handle_call(:wait_for_loaded, from, %{loaded: false, waiting_callers: callers} = state) do
+    # Not loaded yet, add caller to waiting list
+    {:noreply, %{state | waiting_callers: [from | callers]}}
+  end
+
+  @impl true
+  def handle_info(:load_data, %{waiting_callers: callers} = state) do
+    # Load the data
+    success = load_destination_data()
+
+    # Notify all waiting callers
+    Enum.each(callers, fn caller ->
+      GenServer.reply(caller, :ok)
+    end)
+
+    # Update state
+    new_state = %{state | loaded: success, waiting_callers: []}
+    {:noreply, new_state}
   end
 
   # Private functions
@@ -76,9 +104,11 @@ defmodule EtlPipeline.Etl.DestinationCache do
 
       count = :ets.info(@cache_name, :size)
       Logger.info("✅ [DestinationCache] Loaded #{count} destination records")
+      true
     rescue
       error ->
         Logger.error("❌ [DestinationCache] Failed to load destination data: #{inspect(error)}")
+        false
     end
   end
 

@@ -43,6 +43,12 @@ if config_env() == :prod do
 
   # S3 bucket configuration for production
   config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-pipeline-etl-files-prod")
+  
+  # DynamoDB table configuration for production
+  config :common, :dynamodb_table, System.get_env("DYNAMODB_TABLE", "tnt_pipeline_test_results_prod")
+  
+  # ETL Pipeline configuration for production
+  config :etl_pipeline, :dest_s3_key, System.get_env("DEST_S3_KEY", "config/dest.csv")
 
   # AWS configuration - use ECS task role for credentials
   config :ex_aws,

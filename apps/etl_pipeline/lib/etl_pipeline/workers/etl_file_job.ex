@@ -5,8 +5,6 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
   require Logger
 
-  @dest_s3_key Application.compile_env(:etl_pipeline, :dest_s3_key, "config/dest.csv")
-
   @impl true
   def perform(%Job{args: %{"file" => file_path}}) do
     Logger.info("🚀 [ETLFileJob] Starting ETL for file: #{file_path}")
@@ -18,7 +16,7 @@ defmodule EtlPipeline.Workers.EtlFileJob do
 
     samples
     |> Flow.from_enumerable(max_demand: 10, stages: 4)
-    |> Flow.map(&Etl.Enricher.enrich(&1, @dest_s3_key))
+    |> Flow.map(&Etl.Enricher.enrich(&1))
     |> Flow.map(&Etl.Validator.validate/1)
     |> Flow.filter(& &1)
     |> Flow.run()

@@ -61,6 +61,9 @@ COPY --from=builder --chown=app:app /app/_build/prod/rel/etl_pipeline ./
 # Switch to app user
 USER app
 
+# Set APP_TYPE environment variable for proper Oban configuration
+ENV APP_TYPE=etl_pipeline
+
 # Run the ETL pipeline as Oban worker
 # Uses release binary for continuous job processing
 CMD ["./bin/etl_pipeline", "start"]

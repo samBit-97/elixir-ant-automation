@@ -34,6 +34,7 @@ resource "aws_ecs_task_definition" "etl_worker" {
       ]
       environment = [
         { name = "MIX_ENV", value = "prod" },
+        { name = "APP_TYPE", value = "etl_pipeline" },
         { name = "S3_BUCKET", value = var.s3_bucket_name },
         { name = "RDS_HOSTNAME", value = var.rds_hostname },
         { name = "DYNAMODB_TABLE", value = var.dynamodb_table_name },
@@ -42,7 +43,7 @@ resource "aws_ecs_task_definition" "etl_worker" {
         { name = "DB_PORT", value = "5432" },
         { name = "DB_POOL_SIZE", value = "2" },
         { name = "DEST_S3_KEY", value = "config/dest.csv" },
-        { name = "API_URL", value = var.api_url },
+        { name = "API_URL", value = "http://${aws_lb.go_api.dns_name}" },
         { name = "WHM_CLIENT_ID", value = var.whm_client_id },
         { name = "AUTH_TOKEN", value = var.auth_token }
       ],
@@ -134,4 +135,3 @@ resource "aws_cloudwatch_log_group" "go_api" {
     Application = "go-api"
   }
 }
-

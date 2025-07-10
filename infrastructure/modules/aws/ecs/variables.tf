@@ -40,11 +40,6 @@ variable "dynamodb_table_name" {
   default     = "tnt_pipeline_test_results"
 }
 
-variable "api_url" {
-  description = "External API URL for ETL pipeline"
-  type        = string
-}
-
 variable "whm_client_id" {
   description = "WHM Client ID for API authentication"
   type        = string

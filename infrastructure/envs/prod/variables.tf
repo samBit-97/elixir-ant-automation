@@ -20,11 +20,7 @@ variable "s3_bucket_name" {
   default     = "tnt-pipeline-etl-files-prod"
 }
 
-variable "api_url" {
-  description = "External API URL for ETL pipeline"
-  type        = string
-  default     = "http://placeholder-api-url.com"
-}
+# api_url is now generated dynamically from ALB DNS name
 
 variable "whm_client_id" {
   description = "WHM Client ID for API authentication"

@@ -3,8 +3,19 @@ defmodule FileScanner.Scanner do
 
   def run(prefix \\ "") do
     bucket = Application.fetch_env!(:common, :s3_bucket)
+    app_type = System.get_env("APP_TYPE", "unknown")
 
     Logger.info("Scanning bucket: #{bucket}")
+    Logger.info("APP_TYPE: #{app_type}")
+    
+    # Check if Oban instance is available
+    case Oban.config(Common.FileScannerOban) do
+      %Oban.Config{} = config ->
+        Logger.info("Oban instance Common.FileScannerOban is running: #{inspect(config.name)}")
+      nil ->
+        Logger.error("Oban instance Common.FileScannerOban is not available!")
+        raise "Oban instance Common.FileScannerOban is not running"
+    end
 
     s3 = Application.get_env(:common, :s3, Common.S3)
 
