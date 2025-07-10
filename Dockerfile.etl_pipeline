@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for file_scanner release
+# Multi-stage Dockerfile for ETL pipeline release
 # Stage 1: Build the release
 FROM hexpm/elixir:1.18.4-erlang-28.0.1-alpine-3.21.3 AS builder
 
@@ -20,9 +20,9 @@ COPY mix.exs mix.lock ./
 # Copy umbrella config
 COPY config config
 
-# Copy only required apps for file_scanner
+# Copy required apps for ETL pipeline (common + etl_pipeline)
 COPY apps/common apps/common
-COPY apps/file_scanner apps/file_scanner
+COPY apps/etl_pipeline apps/etl_pipeline
 
 # Install hex and rebar
 RUN mix local.hex --force && \
@@ -36,7 +36,7 @@ RUN mix deps.get --only prod && \
 RUN mix compile
 
 # Create the release
-RUN mix release file_scanner
+RUN mix release etl_pipeline
 
 # Stage 2: Create minimal runtime image
 FROM alpine:3.21.3
@@ -56,20 +56,14 @@ RUN addgroup -g 1000 -S app && \
 WORKDIR /app
 
 # Copy the release from builder stage
-COPY --from=builder --chown=app:app /app/_build/prod/rel/file_scanner ./
-
-# Set APP_TYPE environment variable for proper Oban configuration
-ENV APP_TYPE=file_scanner
-
-# Create startup script (as root before switching to app user)
-RUN echo '#!/bin/bash' > /app/run_scanner.sh && \
-    echo 'export APP_TYPE=file_scanner' >> /app/run_scanner.sh && \
-    echo './bin/file_scanner eval "System.put_env(\"APP_TYPE\", \"file_scanner\"); Application.load(:common); Application.ensure_all_started(:common); Application.load(:file_scanner); Application.ensure_all_started(:file_scanner); FileScanner.Scanner.run()"' >> /app/run_scanner.sh && \
-    chmod +x /app/run_scanner.sh && \
-    chown app:app /app/run_scanner.sh
+COPY --from=builder --chown=app:app /app/_build/prod/rel/etl_pipeline ./
 
 # Switch to app user
 USER app
 
-# Run the file scanner and exit
-CMD ["/app/run_scanner.sh"]
+# Set APP_TYPE environment variable for proper Oban configuration
+ENV APP_TYPE=etl_pipeline
+
+# Run the ETL pipeline as Oban worker
+# Uses release binary for continuous job processing
+CMD ["./bin/etl_pipeline", "start"]

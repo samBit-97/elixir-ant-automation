@@ -13,10 +13,18 @@ config :common, Common.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :common, Oban,
+# Oban instances for testing - separate named instances to avoid conflicts
+config :common, Common.EtlOban,
   repo: Common.Repo,
   testing: :manual,
-  name: CommonTestOban
+  name: Common.EtlOban,
+  queues: []
+
+config :common, Common.FileScannerOban,
+  repo: Common.Repo,
+  testing: :manual,
+  name: Common.FileScannerOban,
+  queues: []
 
 config :etl_pipeline,
   api_url: "http://localhost:8083",

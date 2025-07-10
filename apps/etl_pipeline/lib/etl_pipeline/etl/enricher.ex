@@ -1,6 +1,5 @@
 defmodule EtlPipeline.Etl.Enricher do
   require Logger
-  alias EtlPipeline.Etl.FileStreamer
   alias Common.Model
 
   alias Common.Api.{
@@ -20,11 +19,11 @@ defmodule EtlPipeline.Etl.Enricher do
 
   @api_date_layout "%Y-%m-%d"
 
-  def enrich(sample, dest_file_path) do
-    with :ok <- validate_input(sample, dest_file_path),
+  def enrich(sample) do
+    with :ok <- validate_input_sample(sample),
          :ok <- validate_auth_config(),
          row when not is_nil(row) <-
-           get_first_match_shipper(dest_file_path, sample.shipper, sample.origin) do
+           EtlPipeline.Etl.DestinationCache.get_row(sample.shipper) do
       Logger.debug("🚀 [Enricher] Found row for shipper_id=#{sample.shipper} → Enriching.")
       build_api_context(row, sample)
     else
@@ -34,7 +33,7 @@ defmodule EtlPipeline.Etl.Enricher do
 
       nil ->
         Logger.warning(
-          "⚠️ [Enricher] No row found in #{dest_file_path} for shipper_id=#{sample.shipper}"
+          "⚠️ [Enricher] No row found in cache for shipper_id=#{sample.shipper}, origin=#{sample.origin}"
         )
 
         nil
@@ -48,14 +47,6 @@ defmodule EtlPipeline.Etl.Enricher do
       url: "#{get_api_url()}/#{sample.origin}/rate/qualifiedcarriers",
       expected_transit_day: sample.expected_transit_day
     }
-  end
-
-  defp get_first_match_shipper(dest_file_path, shipper, origin) do
-    file_streamer = Application.get_env(:etl_pipeline, :file_streamer, FileStreamer)
-
-    dest_file_path
-    |> file_streamer.stream_file(origin)
-    |> Enum.find(fn row -> row.shipper_id == shipper end)
   end
 
   defp build_api_request(%RowInfo{} = row) do
@@ -181,7 +172,7 @@ defmodule EtlPipeline.Etl.Enricher do
     end
   end
 
-  defp validate_input(sample, dest_file_path) do
+  defp validate_input_sample(sample) do
     cond do
       is_nil(sample) ->
         {:error, "Sample cannot be nil"}
@@ -191,15 +182,6 @@ defmodule EtlPipeline.Etl.Enricher do
 
       is_nil(sample.origin) ->
         {:error, "Sample origin cannot be nil"}
-
-      not is_binary(dest_file_path) ->
-        {:error, "Destination file path must be a string"}
-
-      String.length(dest_file_path) == 0 ->
-        {:error, "Destination file path cannot be empty"}
-
-      not File.exists?(dest_file_path) ->
-        {:error, "Destination file does not exist"}
 
       true ->
         :ok

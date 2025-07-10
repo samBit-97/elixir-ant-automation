@@ -80,7 +80,7 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
       stream_file: fn _, "ORD" -> [@row_info] end do
       with_mock Sampler, [:passthrough], sample: fn [@sample_model], 10 -> [@sample_model] end do
         with_mock Enricher, [:passthrough],
-          enrich: fn @sample_model, _ ->
+          enrich: fn @sample_model ->
             %ApiContext{
               api_request: %ApiRequest{
                 package_info: %PackageInfo{shipper_id: "SHIP123", loc: "ORD"},
@@ -131,7 +131,7 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
       stream_s3_bucket: fn ^file_path -> [invalid_sample] end do
       with_mock Sampler, [:passthrough],
         sample: fn [invalid_sample], 10 -> [invalid_sample] end do
-        with_mock Enricher, [:passthrough], enrich: fn ^invalid_sample, _ -> nil end do
+        with_mock Enricher, [:passthrough], enrich: fn ^invalid_sample -> nil end do
           with_mock Validator, [:passthrough], validate: fn nil -> nil end do
             result = EtlFileJob.perform(job)
             assert result == :ok
@@ -170,7 +170,7 @@ defmodule EtlPipeline.Workers.EtlFileJobTest do
       with_mock Sampler, [:passthrough],
         sample: fn [sample1, sample2], 10 -> [sample1, sample2] end do
         with_mock Enricher, [:passthrough],
-          enrich: fn sample, _ ->
+          enrich: fn sample ->
             %ApiContext{
               api_request: %ApiRequest{
                 package_info: %PackageInfo{shipper_id: sample.shipper, loc: sample.origin},

@@ -19,8 +19,8 @@ resource "aws_ecs_task_definition" "file_scanner" {
       image     = "445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-file-scanner:latest",
       essential = true,
 
-      # Use release binary with eval to run file_scanner
-      command = ["./bin/file_scanner", "eval", "Application.ensure_all_started(:file_scanner); FileScanner.Scanner.run()"],
+      # Use startup script with proper APP_TYPE setting
+      command = ["/app/run_scanner.sh"],
 
       secrets = [
         {
@@ -34,6 +34,7 @@ resource "aws_ecs_task_definition" "file_scanner" {
       ]
       environment = [
         { name = "MIX_ENV", value = "prod" },
+        { name = "APP_TYPE", value = "file_scanner" },
         { name = "S3_BUCKET", value = var.s3_bucket_name },
         { name = "RDS_HOSTNAME", value = var.rds_hostname },
         { name = "DYNAMODB_TABLE", value = var.dynamodb_table_name },

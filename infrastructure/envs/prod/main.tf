@@ -60,6 +60,9 @@ module "ecs_cluster" {
   s3_bucket_name             = var.s3_bucket_name
   dynamodb_table_name        = var.dynamodb_table_name
   environment                = "prod"
+  # api_url is now generated dynamically within the ECS module
+  whm_client_id              = var.whm_client_id
+  auth_token                 = var.auth_token
 }
 
 # DynamoDB table for production
@@ -107,4 +110,46 @@ resource "aws_security_group" "rds_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# Output the Go API URL for use in terraform.tfvars
+output "go_api_url" {
+  description = "URL of the Go API service via ALB"
+  value       = module.ecs_cluster.go_api_url
+}
+
+output "go_api_alb_dns_name" {
+  description = "DNS name of the Go API ALB"
+  value       = module.ecs_cluster.go_api_alb_dns_name
+}
+
+# ECS networking outputs for start-etl-pipeline-task.sh script
+output "subnet_id" {
+  description = "First subnet ID for ECS tasks"
+  value       = module.ecs_cluster.subnet_id
+}
+
+output "subnet_ids" {
+  description = "All subnet IDs for ECS tasks"
+  value       = module.ecs_cluster.subnet_ids
+}
+
+output "ecs_security_group_id" {
+  description = "Security group ID for ECS Fargate tasks"
+  value       = module.ecs_cluster.ecs_security_group_id
+}
+
+output "fargate_security_group_id" {
+  description = "Security group ID for ECS Fargate tasks"
+  value       = module.ecs_cluster.fargate_security_group_id
+}
+
+output "cluster_name" {
+  description = "Name of the ECS Cluster"
+  value       = module.ecs_cluster.cluster_name
+}
+
+output "etl_task_definition_arn" {
+  description = "ARN of the ETL worker task definition"
+  value       = module.ecs_cluster.etl_task_definition_arn
 }

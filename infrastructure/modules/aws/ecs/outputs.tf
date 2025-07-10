@@ -10,8 +10,23 @@ output "ecs_cluster_name" {
 
 
 output "ecs_security_group_id" {
-  description = "Security group ID for ECS EC2 instances"
-  value       = aws_security_group.ecs.id
+  description = "Security group ID for ECS Fargate tasks"
+  value       = aws_security_group.fargate.id
+}
+
+output "fargate_security_group_id" {
+  description = "Security group ID for ECS Fargate tasks"
+  value       = aws_security_group.fargate.id
+}
+
+output "subnet_id" {
+  description = "First subnet ID for ECS tasks"
+  value       = var.subnet_ids[0]
+}
+
+output "subnet_ids" {
+  description = "All subnet IDs for ECS tasks"
+  value       = var.subnet_ids
 }
 
 output "cluster_name" {
@@ -29,12 +44,19 @@ output "etl_task_definition_arn" {
   value       = aws_ecs_task_definition.etl_worker.arn
 }
 
-output "etl_service_name" {
-  description = "Name of the ETL worker service"
-  value       = aws_ecs_service.etl_worker.name
+# ETL service outputs removed - now using task-only mode
+
+output "go_api_alb_dns_name" {
+  description = "DNS name of the Go API Application Load Balancer"
+  value       = aws_lb.go_api.dns_name
 }
 
-output "etl_service_arn" {
-  description = "ARN of the ETL worker service"
-  value       = aws_ecs_service.etl_worker.id
+output "go_api_alb_zone_id" {
+  description = "Zone ID of the Go API Application Load Balancer"
+  value       = aws_lb.go_api.zone_id
+}
+
+output "go_api_url" {
+  description = "Full URL of the Go API service"
+  value       = "http://${aws_lb.go_api.dns_name}"
 }

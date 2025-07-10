@@ -11,6 +11,7 @@ defmodule EtlPipeline.Application do
       # Starts a worker by calling: EtlPipeline.Worker.start_link(arg)
       # {EtlPipeline.Worker, arg}
       # Oban will be started in Common.Application since it uses Common.Repo
+      EtlPipeline.Etl.DestinationCache
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

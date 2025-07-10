@@ -23,7 +23,8 @@ defmodule ScannerTest do
 
     # Mock job insertion instead of actually running it
     with_mock Oban, [:passthrough],
-      insert!: fn changeset ->
+      insert!: fn oban_instance, changeset ->
+        assert oban_instance == Common.FileScannerOban
         assert changeset.changes.queue == "etl_files"
         assert changeset.changes.worker == "EtlPipeline.Workers.EtlFileJob"
         # return a fake job
@@ -31,8 +32,8 @@ defmodule ScannerTest do
       end do
       FileScanner.Scanner.run()
 
-      # Verify Oban.insert! was called for all files
-      assert_called(Oban.insert!(:_))
+      # Verify Oban.insert! was called for all files (should be called 4 times)
+      assert_called(Oban.insert!(Common.FileScannerOban, :_))
     end
   end
 end

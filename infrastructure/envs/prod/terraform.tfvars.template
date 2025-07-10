@@ -6,8 +6,18 @@
 rds_username = "your_db_username_here"
 rds_password = "your_secure_db_password_here"
 
+# API Configuration for ETL Pipeline
+# NOTE: Use two-stage deployment approach for api_url
+# STAGE 1: Leave api_url commented out for initial deployment
+# STAGE 2: Uncomment and set to actual ALB DNS name after first apply
+# api_url = "http://etl-cluster-prod-go-api-alb-123456789.us-east-1.elb.amazonaws.com"
+whm_client_id = "your_whm_client_id_here"
+auth_token = "your_secure_auth_token_here"
+
 # Instructions:
 # 1. Copy this file: cp terraform.tfvars.template terraform.tfvars
-# 2. Fill in your actual production values
-# 3. Ensure terraform.tfvars is in .gitignore (already configured)
-# 4. Use AWS Secrets Manager for enhanced security
+# 2. Fill in your actual production values (RDS, WHM, AUTH_TOKEN)
+# 3. Run terraform apply (uses default placeholder API URL)
+# 4. Copy the go_api_url output and uncomment/set api_url above
+# 5. Run terraform apply again to update ETL pipeline with real API URL
+# 6. Ensure terraform.tfvars is in .gitignore (already configured)
