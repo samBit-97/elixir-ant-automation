@@ -64,18 +64,6 @@ echo "• ALB DNS Name: ${ALB_DNS}"
 echo "• API URL: ${API_URL}"
 echo ""
 
-# Check if api_url is already set in terraform.tfvars
-if grep -q "^api_url.*=" terraform.tfvars; then
-    echo "ℹ️  API URL already configured in terraform.tfvars"
-    echo "   Current value: $(grep '^api_url.*=' terraform.tfvars)"
-else
-    echo "📝 Adding API URL to terraform.tfvars..."
-    echo "" >> terraform.tfvars
-    echo "# Auto-generated API URL from ALB deployment" >> terraform.tfvars
-    echo "api_url = \"${API_URL}\"" >> terraform.tfvars
-    echo "✅ API URL added to terraform.tfvars"
-fi
-
 echo ""
 echo "🔄 Applying updated configuration..."
 terraform plan -out=tfplan-stage2

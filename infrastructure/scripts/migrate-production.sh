@@ -10,7 +10,7 @@ echo "🔧 Running database migrations on production RDS..."
 # Set environment variables for production migration
 export DB_USERNAME=${USERNAME}
 export DB_PASSWORD=${PASSWORD}
-export RDS_HOSTNAME=${HOSTNAME}
+export RDS_HOSTNAME=${HOST}
 export DB_NAME=etl_rds
 export DB_PORT=${PORT}
 export MIX_ENV=prod
