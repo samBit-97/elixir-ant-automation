@@ -60,3 +60,44 @@ output "go_api_url" {
   description = "Full URL of the Go API service"
   value       = "http://${aws_lb.go_api.dns_name}"
 }
+
+# Cluster-specific outputs
+output "cluster_service_discovery_namespace" {
+  description = "Service discovery namespace for the cluster"
+  value       = aws_service_discovery_private_dns_namespace.tnt_pipeline.name
+}
+
+output "cluster_service_discovery_service" {
+  description = "Service discovery service name"
+  value       = aws_service_discovery_service.tnt_pipeline.name
+}
+
+output "cluster_security_group_id" {
+  description = "Security group ID for cluster communication"
+  value       = aws_security_group.cluster.id
+}
+
+output "coordinator_service_name" {
+  description = "ECS service name for coordinator"
+  value       = aws_ecs_service.coordinator.name
+}
+
+output "etl_workers_service_name" {
+  description = "ECS service name for ETL workers"
+  value       = aws_ecs_service.etl_workers.name
+}
+
+output "balanced_workers_service_name" {
+  description = "ECS service name for balanced workers"
+  value       = aws_ecs_service.balanced_workers.name
+}
+
+output "cluster_secret_arn" {
+  description = "ARN of the cluster secret for Erlang distribution"
+  value       = aws_secretsmanager_secret.cluster_secret.arn
+}
+
+output "migration_task_definition_arn" {
+  description = "ARN of the database migration task definition"
+  value       = aws_ecs_task_definition.db_migration.arn
+}
