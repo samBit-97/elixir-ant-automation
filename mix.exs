@@ -8,18 +8,11 @@ defmodule TntPipeline.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       releases: [
-        etl_pipeline: [
+        # Unified monolith release
+        tnt_pipeline: [
           include_executables_for: [:unix],
           applications: [
-            etl_pipeline: :permanent,
-            common: :permanent,
-            runtime_tools: :permanent
-          ]
-        ],
-        file_scanner: [
-          include_executables_for: [:unix],
-          applications: [
-            file_scanner: :permanent,
+            tnt_pipeline: :permanent,
             common: :permanent,
             runtime_tools: :permanent
           ]

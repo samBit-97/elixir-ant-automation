@@ -1,12 +1,12 @@
-# ETL worker task definition for processing jobs
-resource "aws_ecs_task_definition" "etl_worker" {
-  family                   = "${var.cluster_name}-etl-worker"
+# File Scanner task definition (Node 1 - Coordinator)
+resource "aws_ecs_task_definition" "file_scanner" {
+  family                   = "${var.cluster_name}-file-scanner"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "256"
+  memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  task_role_arn            = aws_iam_role.cluster_task_role.arn
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -15,12 +15,12 @@ resource "aws_ecs_task_definition" "etl_worker" {
 
   container_definitions = jsonencode([
     {
-      name      = "etl-worker",
+      name      = "file-scanner",
       image     = "445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest",
       essential = true,
 
-      # Run Oban worker to process jobs using release
-      command = ["./bin/etl_pipeline", "start"],
+      # Run scanner once and exit (one-shot execution)
+      command = ["./bin/tnt_pipeline", "eval", "Mix.Tasks.TntPipeline.Scan.run([])"],
 
       secrets = [
         {
@@ -30,11 +30,20 @@ resource "aws_ecs_task_definition" "etl_worker" {
         {
           name      = "DB_PASSWORD",
           valueFrom = "${var.rds_credentials_secret_arn}:password::"
+        },
+        {
+          name      = "CLUSTER_SECRET",
+          valueFrom = "${aws_secretsmanager_secret.cluster_secret.arn}:cookie::"
         }
       ]
       environment = [
         { name = "MIX_ENV", value = "prod" },
-        { name = "APP_TYPE", value = "etl_pipeline" },
+        { name = "NODE_ROLE", value = "file_scanner" },
+        { name = "RELEASE_DISTRIBUTION", value = "name" },
+        { name = "LIBCLUSTER_STRATEGY", value = "ECS" },
+        { name = "ECS_CLUSTER_NAME", value = var.cluster_name },
+        { name = "ECS_SERVICE_NAME", value = "file-scanner" },
+        { name = "SERVICE_DISCOVERY_NAMESPACE", value = "tnt-pipeline.local" },
         { name = "S3_BUCKET", value = var.s3_bucket_name },
         { name = "RDS_HOSTNAME", value = var.rds_hostname },
         { name = "DYNAMODB_TABLE", value = var.dynamodb_table_name },
@@ -47,6 +56,116 @@ resource "aws_ecs_task_definition" "etl_worker" {
         { name = "WHM_CLIENT_ID", value = var.whm_client_id },
         { name = "AUTH_TOKEN", value = var.auth_token }
       ],
+      
+      portMappings = [
+        {
+          containerPort = 4000
+          protocol      = "tcp"
+        },
+        {
+          containerPort = 4369
+          protocol      = "tcp"
+        }
+      ],
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 60
+      },
+
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "/ecs/file-scanner",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+    }
+  ])
+}
+
+# ETL Worker task definition (Nodes 2-3)
+resource "aws_ecs_task_definition" "etl_worker" {
+  family                   = "${var.cluster_name}-etl-worker"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.cluster_task_role.arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
+  container_definitions = jsonencode([
+    {
+      name      = "etl-worker",
+      image     = "445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest",
+      essential = true,
+
+      # Run as ETL worker node
+      command = ["./bin/tnt_pipeline", "start"],
+
+      secrets = [
+        {
+          name      = "DB_USERNAME",
+          valueFrom = "${var.rds_credentials_secret_arn}:username::"
+        },
+        {
+          name      = "DB_PASSWORD",
+          valueFrom = "${var.rds_credentials_secret_arn}:password::"
+        },
+        {
+          name      = "CLUSTER_SECRET",
+          valueFrom = "${aws_secretsmanager_secret.cluster_secret.arn}:cookie::"
+        }
+      ]
+      environment = [
+        { name = "MIX_ENV", value = "prod" },
+        { name = "NODE_ROLE", value = "etl_worker" },
+        { name = "RELEASE_DISTRIBUTION", value = "name" },
+        { name = "LIBCLUSTER_STRATEGY", value = "ECS" },
+        { name = "ECS_CLUSTER_NAME", value = var.cluster_name },
+        { name = "ECS_SERVICE_NAME", value = "etl-workers" },
+        { name = "SERVICE_DISCOVERY_NAMESPACE", value = "tnt-pipeline.local" },
+        { name = "S3_BUCKET", value = var.s3_bucket_name },
+        { name = "RDS_HOSTNAME", value = var.rds_hostname },
+        { name = "DYNAMODB_TABLE", value = var.dynamodb_table_name },
+        { name = "AWS_DEFAULT_REGION", value = "us-east-1" },
+        { name = "DB_NAME", value = "etl_rds" },
+        { name = "DB_PORT", value = "5432" },
+        { name = "DB_POOL_SIZE", value = "4" },
+        { name = "DEST_S3_KEY", value = "config/dest.csv" },
+        { name = "API_URL", value = "http://${aws_lb.go_api.dns_name}" },
+        { name = "WHM_CLIENT_ID", value = var.whm_client_id },
+        { name = "AUTH_TOKEN", value = var.auth_token }
+      ],
+      
+      portMappings = [
+        {
+          containerPort = 4000
+          protocol      = "tcp"
+        },
+        {
+          containerPort = 4369
+          protocol      = "tcp"
+        }
+      ],
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 60
+      },
+
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -59,7 +178,107 @@ resource "aws_ecs_task_definition" "etl_worker" {
   ])
 }
 
-# CloudWatch log group for ETL workers
+# Balanced Worker task definition (Nodes 4-5)
+resource "aws_ecs_task_definition" "balanced_worker" {
+  family                   = "${var.cluster_name}-balanced-worker"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.cluster_task_role.arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
+  container_definitions = jsonencode([
+    {
+      name      = "balanced-worker",
+      image     = "445567085614.dkr.ecr.us-east-1.amazonaws.com/tnt-pipeline-etl:latest",
+      essential = true,
+
+      # Run as balanced worker node
+      command = ["./bin/tnt_pipeline", "start"],
+
+      secrets = [
+        {
+          name      = "DB_USERNAME",
+          valueFrom = "${var.rds_credentials_secret_arn}:username::"
+        },
+        {
+          name      = "DB_PASSWORD",
+          valueFrom = "${var.rds_credentials_secret_arn}:password::"
+        },
+        {
+          name      = "CLUSTER_SECRET",
+          valueFrom = "${aws_secretsmanager_secret.cluster_secret.arn}:cookie::"
+        }
+      ]
+      environment = [
+        { name = "MIX_ENV", value = "prod" },
+        { name = "NODE_ROLE", value = "balanced" },
+        { name = "RELEASE_DISTRIBUTION", value = "name" },
+        { name = "LIBCLUSTER_STRATEGY", value = "ECS" },
+        { name = "ECS_CLUSTER_NAME", value = var.cluster_name },
+        { name = "ECS_SERVICE_NAME", value = "balanced-workers" },
+        { name = "SERVICE_DISCOVERY_NAMESPACE", value = "tnt-pipeline.local" },
+        { name = "S3_BUCKET", value = var.s3_bucket_name },
+        { name = "RDS_HOSTNAME", value = var.rds_hostname },
+        { name = "DYNAMODB_TABLE", value = var.dynamodb_table_name },
+        { name = "AWS_DEFAULT_REGION", value = "us-east-1" },
+        { name = "DB_NAME", value = "etl_rds" },
+        { name = "DB_PORT", value = "5432" },
+        { name = "DB_POOL_SIZE", value = "4" },
+        { name = "DEST_S3_KEY", value = "config/dest.csv" },
+        { name = "API_URL", value = "http://${aws_lb.go_api.dns_name}" },
+        { name = "WHM_CLIENT_ID", value = var.whm_client_id },
+        { name = "AUTH_TOKEN", value = var.auth_token }
+      ],
+      
+      portMappings = [
+        {
+          containerPort = 4000
+          protocol      = "tcp"
+        },
+        {
+          containerPort = 4369
+          protocol      = "tcp"
+        }
+      ],
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 60
+      },
+
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "/ecs/balanced-worker",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+    }
+  ])
+}
+
+# CloudWatch log groups for all node types
+resource "aws_cloudwatch_log_group" "file_scanner" {
+  name              = "/ecs/file-scanner"
+  retention_in_days = 7
+
+  tags = {
+    Environment = var.environment
+    Application = "file-scanner"
+  }
+}
+
 resource "aws_cloudwatch_log_group" "etl_worker" {
   name              = "/ecs/etl-worker"
   retention_in_days = 7
@@ -67,6 +286,16 @@ resource "aws_cloudwatch_log_group" "etl_worker" {
   tags = {
     Environment = var.environment
     Application = "etl-worker"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "balanced_worker" {
+  name              = "/ecs/balanced-worker"
+  retention_in_days = 7
+
+  tags = {
+    Environment = var.environment
+    Application = "balanced-worker"
   }
 }
 
@@ -78,7 +307,7 @@ resource "aws_ecs_task_definition" "go_api" {
   cpu                      = "512"
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  task_role_arn            = aws_iam_role.cluster_task_role.arn
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -144,7 +373,7 @@ resource "aws_ecs_task_definition" "db_migration" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  task_role_arn            = aws_iam_role.cluster_task_role.arn
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -168,6 +397,10 @@ resource "aws_ecs_task_definition" "db_migration" {
         {
           name      = "DB_PASSWORD",
           valueFrom = "${var.rds_credentials_secret_arn}:password::"
+        },
+        {
+          name      = "CLUSTER_SECRET",
+          valueFrom = "${aws_secretsmanager_secret.cluster_secret.arn}:cookie::"
         }
       ]
       environment = [

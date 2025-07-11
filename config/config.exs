@@ -20,7 +20,7 @@ import Config
 # Static configuration (compile-time)
 config :common, :s3, Common.S3
 config :common, ecto_repos: [Common.Repo]
-config :etl_pipeline, :http_client, Common.HttpoisonClient
+config :common, :http_client, Common.HttpoisonClient
 
 config :common, Oban,
   repo: Common.Repo,

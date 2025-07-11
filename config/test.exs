@@ -26,7 +26,7 @@ config :common, Common.FileScannerOban,
   name: Common.FileScannerOban,
   queues: []
 
-config :etl_pipeline,
+config :tnt_pipeline,
   api_url: "http://localhost:8083",
   whm_client_id: "test_client",
   auth_token: "test_token",

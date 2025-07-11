@@ -7,7 +7,7 @@ import Config
 config :logger, level: :info
 
 # Runtime configuration for production
-config :etl_pipeline, EtlPipeline.Endpoint,
+config :tnt_pipeline, TntPipeline.Endpoint,
   http: [port: {:system, "PORT"}],
   url: [host: System.get_env("HOST"), port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"

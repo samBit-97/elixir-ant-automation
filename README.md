@@ -37,7 +37,7 @@ TntPipeline is a production-ready Elixir umbrella project designed for scalable 
 
 ## Setup Instructions
 
-### Prerequisites
+## Prerequisites
 
 - Elixir 1.18+ and Erlang/OTP 26+
 - PostgreSQL 13+
@@ -153,6 +153,7 @@ aws --endpoint-url=http://localhost:4566 s3 mb s3://tnt-automation-test
 The TNT Pipeline is undergoing an architectural evolution from microservices to a unified monolith with LibCluster for enhanced scalability and operational simplicity.
 
 #### **Current Architecture (Microservices)**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐
 │  File Scanner   │    │  ETL Pipeline   │
@@ -171,6 +172,7 @@ The TNT Pipeline is undergoing an architectural evolution from microservices to 
 ```
 
 #### **Future Architecture (Monolith + LibCluster)**
+
 ```
 ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
 │   Node 1      │  │   Node 2      │  │   Node 3      │
@@ -192,6 +194,7 @@ The TNT Pipeline is undergoing an architectural evolution from microservices to 
 ```
 
 **Queue Architecture:**
+
 - `file_discovery`: S3 scanning and file detection jobs
 - `etl_files`: Main ETL processing pipeline
 - `persist_results`: DynamoDB batch write operations
@@ -199,11 +202,13 @@ The TNT Pipeline is undergoing an architectural evolution from microservices to 
 - `monitoring`: Health checks and system metrics
 
 **Role-based Node Configuration:**
+
 - **file_scanner**: Specialized for S3 discovery (file_discovery: 10)
 - **etl_worker**: Heavy processing nodes (etl_files: 50, persist_results: 20, dashboard_updates: 10)
 - **balanced**: Mixed workload nodes (all queues with moderate concurrency)
 
 **Migration Benefits:**
+
 - ✅ **Unified Operations**: Single application with role-based deployment
 - ✅ **True Horizontal Scaling**: Dynamic node addition with LibCluster
 - ✅ **Better Resource Utilization**: Shared Oban instance across cluster
@@ -212,6 +217,7 @@ The TNT Pipeline is undergoing an architectural evolution from microservices to 
 - ✅ **Real-time Dashboard**: Phoenix LiveView integration for live monitoring
 
 **📚 Migration Documentation:**
+
 - [Architecture Migration Guide](docs/architecture-decisions/001-monolith-clustering-migration.md)
 - [Oban Clustering Strategies](https://obsidian-vault/elixir/oban-clustering-strategies.md)
 - [LibCluster ECS Setup](https://obsidian-vault/elixir/libcluster-ecs-setup.md)

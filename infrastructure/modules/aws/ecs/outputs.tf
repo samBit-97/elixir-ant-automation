@@ -101,3 +101,34 @@ output "migration_task_definition_arn" {
   description = "ARN of the database migration task definition"
   value       = aws_ecs_task_definition.db_migration.arn
 }
+
+# Auto-scaling outputs
+output "etl_workers_autoscaling_target_resource_id" {
+  description = "Resource ID of the ETL workers auto-scaling target"
+  value       = aws_appautoscaling_target.etl_workers.resource_id
+}
+
+output "balanced_workers_autoscaling_target_resource_id" {
+  description = "Resource ID of the balanced workers auto-scaling target"
+  value       = aws_appautoscaling_target.balanced_workers.resource_id
+}
+
+output "etl_workers_scale_up_policy_arn" {
+  description = "ARN of the ETL workers scale-up policy"
+  value       = aws_appautoscaling_policy.etl_workers_scale_up.arn
+}
+
+output "balanced_workers_scale_up_policy_arn" {
+  description = "ARN of the balanced workers scale-up policy"
+  value       = aws_appautoscaling_policy.balanced_workers_scale_up.arn
+}
+
+output "cloudwatch_metric_namespace" {
+  description = "CloudWatch namespace for TNT Pipeline metrics"
+  value       = "TntPipeline/QueueBalancer"
+}
+
+output "autoscaling_iam_role_arn" {
+  description = "ARN of the ECS auto-scaling IAM role"
+  value       = aws_iam_role.ecs_autoscaling_role.arn
+}

@@ -1,49 +1,17 @@
-# ECS Services for 5-Node TNT Pipeline Cluster (Fixed Counts)
+# ECS Services for 4-Node LibCluster Architecture  
+# 4 persistent workers with role-based deployment
+# File scanner runs as one-shot task (manually triggered)
 
-# Service 1: Coordinator (always running)
-resource "aws_ecs_service" "coordinator" {
-  name            = "coordinator"
-  cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.coordinator.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+#########################################
+# Nodes 1-2: ETL Workers
+# Dedicated ETL processing (auto-scaling 2-10)
+#########################################
 
-  network_configuration {
-    subnets          = var.subnet_ids
-    security_groups  = [aws_security_group.cluster.id]
-    assign_public_ip = true
-  }
-
-  # Enable service discovery
-  service_registries {
-    registry_arn = aws_service_discovery_service.tnt_pipeline.arn
-  }
-
-  # Placement constraints to ensure coordinator runs on different AZ
-  placement_constraints {
-    type = "distinctInstance"
-  }
-
-  tags = {
-    Name        = "TNT Pipeline Coordinator"
-    Environment = var.environment
-    NodeRole    = "file_scanner"
-    Purpose     = "Cluster coordination and file discovery"
-  }
-
-  depends_on = [
-    aws_service_discovery_service.tnt_pipeline,
-    aws_ecs_task_definition.coordinator,
-    null_resource.db_migration # Wait for migration to complete
-  ]
-}
-
-# Services 2-3: ETL Workers (fixed count: 2)
 resource "aws_ecs_service" "etl_workers" {
   name            = "etl-workers"
   cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.etl_worker_cluster.arn
-  desired_count   = 2 # Fixed count: 2 ETL workers
+  task_definition = aws_ecs_task_definition.etl_worker.arn
+  desired_count   = 2 # Initial count: auto-scales 2-10
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -66,22 +34,26 @@ resource "aws_ecs_service" "etl_workers" {
     Name        = "TNT Pipeline ETL Workers"
     Environment = var.environment
     NodeRole    = "etl_worker"
-    Purpose     = "Heavy ETL processing"
+    Purpose     = "Dedicated ETL processing"
   }
 
   depends_on = [
     aws_service_discovery_service.tnt_pipeline,
-    aws_ecs_task_definition.etl_worker_cluster,
-    null_resource.db_migration # Wait for migration to complete
+    aws_ecs_task_definition.etl_worker,
+    null_resource.db_migration
   ]
 }
 
-# Services 4-5: Balanced Workers (fixed count: 2)
+#########################################
+# Nodes 3-4: Balanced Workers
+# Multi-purpose workers (auto-scaling 2-8)
+#########################################
+
 resource "aws_ecs_service" "balanced_workers" {
   name            = "balanced-workers"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.balanced_worker.arn
-  desired_count   = 2 # Fixed count: 2 balanced workers
+  desired_count   = 2 # Initial count: auto-scales 2-8
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -104,20 +76,22 @@ resource "aws_ecs_service" "balanced_workers" {
     Name        = "TNT Pipeline Balanced Workers"
     Environment = var.environment
     NodeRole    = "balanced"
-    Purpose     = "Mixed workload processing"
+    Purpose     = "Multi-purpose processing (persist_results, dashboard_updates, monitoring)"
   }
 
   depends_on = [
     aws_service_discovery_service.tnt_pipeline,
     aws_ecs_task_definition.balanced_worker,
-    null_resource.db_migration # Wait for migration to complete
+    null_resource.db_migration
   ]
 }
 
-# Summary of 5-Node Fixed Cluster:
-# 1 Coordinator (file_scanner role)
-# 2 ETL Workers (etl_worker role) 
-# 2 Balanced Workers (balanced role)
-# Total: 5 nodes with predictable costs
-# Manual scaling: Change desired_count to increase nodes
+#########################################
+# Architecture Summary
+#########################################
 
+# 4-Node LibCluster Architecture:
+# Nodes 1-2: ETL Workers (etl_files queue) - Auto-scaling 2-10 instances
+# Nodes 3-4: Balanced Workers (persist_results, dashboard_updates, monitoring queues) - Auto-scaling 2-8 instances
+# File Scanner: One-shot task (manually triggered) - Creates ETL jobs and exits
+# Total: 4-18 persistent instances + on-demand scanner with LibCluster coordination

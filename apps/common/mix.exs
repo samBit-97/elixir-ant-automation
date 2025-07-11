@@ -40,6 +40,7 @@ defmodule Common.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:oban, "~> 2.19.4"},
+      {:libcluster, "~> 3.4"},
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.0", only: :test}
     ]

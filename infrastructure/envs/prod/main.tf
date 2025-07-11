@@ -153,3 +153,19 @@ output "etl_task_definition_arn" {
   description = "ARN of the ETL worker task definition"
   value       = module.ecs_cluster.etl_task_definition_arn
 }
+
+# Auto-scaling outputs
+output "etl_workers_autoscaling_target_resource_id" {
+  description = "Resource ID of the ETL workers auto-scaling target"
+  value       = module.ecs_cluster.etl_workers_autoscaling_target_resource_id
+}
+
+output "balanced_workers_autoscaling_target_resource_id" {
+  description = "Resource ID of the balanced workers auto-scaling target"
+  value       = module.ecs_cluster.balanced_workers_autoscaling_target_resource_id
+}
+
+output "cloudwatch_metric_namespace" {
+  description = "CloudWatch namespace for TNT Pipeline metrics"
+  value       = module.ecs_cluster.cloudwatch_metric_namespace
+}

@@ -4,7 +4,7 @@ import Config
 # This allows ECS environment variables to be used properly
 
 # API Configuration for ETL Pipeline (applies to all environments)
-config :etl_pipeline,
+config :tnt_pipeline,
   api_url: System.get_env("API_URL", "http://localhost:8083"),
   whm_client_id: System.get_env("WHM_CLIENT_ID", "whm_client_id"),
   auth_token: System.get_env("AUTH_TOKEN", "auth_token"),
@@ -48,7 +48,7 @@ if config_env() == :prod do
   config :common, :dynamodb_table, System.get_env("DYNAMODB_TABLE", "tnt_pipeline_test_results_prod")
   
   # ETL Pipeline configuration for production
-  config :etl_pipeline, :dest_s3_key, System.get_env("DEST_S3_KEY", "config/dest.csv")
+  config :tnt_pipeline, :dest_s3_key, System.get_env("DEST_S3_KEY", "config/dest.csv")
 
   # AWS configuration - use ECS task role for credentials
   config :ex_aws,
@@ -67,4 +67,4 @@ end
 # Set defaults if environment variables are not provided
 config :common, s3_bucket: System.get_env("S3_BUCKET", "tnt-pipeline-etl-files-dev")
 config :common, :dynamodb_table, System.get_env("DYNAMODB_TABLE", "tnt_pipeline_test_results_dev")
-config :etl_pipeline, :dest_s3_key, System.get_env("DEST_S3_KEY", "config/dest.csv")
+config :tnt_pipeline, :dest_s3_key, System.get_env("DEST_S3_KEY", "config/dest.csv")
